@@ -52,7 +52,7 @@ task('attestation', 'tests the attestation module').setAction(async ({}, hre) =>
     };
     await waitForTx(lensHub.connect(user).createProfile(inputProfilStruct));
 
-    // 2- Post
+    // 2- normal post
     // Whitelist of free collect module
     const freeCollectModuleAddr = addrs['free collect module'];
     await waitForTx(lensHub.whitelistCollectModule(freeCollectModuleAddr, true));
@@ -69,7 +69,7 @@ task('attestation', 'tests the attestation module').setAction(async ({}, hre) =>
     await waitForTx(lensHub.connect(user).post(inputPostStruct));
     console.log(await lensHub.getPub(1, 1));
 
-    // 3- Comment normal
+    // 3- normal comment 
     const inputCommentStruct: CommentDataStruct = {
         profileId: 1,
         contentURI: 'blabla',
