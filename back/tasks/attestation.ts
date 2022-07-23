@@ -5,7 +5,11 @@ import {
     LensHub__factory,
     SecretCodeFollowModule__factory,
 } from '../typechain-types';
-import { CreateProfileDataStruct } from '../typechain-types/LensHub';
+import {
+    CommentDataStruct,
+    CreateProfileDataStruct,
+    PostDataStruct,
+} from '../typechain-types/LensHub';
 import {
     deployContract,
     getAddrs,
@@ -15,18 +19,30 @@ import {
     ZERO_ADDRESS,
 } from './helpers/utils';
 
+/**
+ * Task order :
+ * 1- create a profile
+ * 2- create a normal post
+ * 3- create a comment
+ * 4- create a post gated with token
+ * 5- create a comment if user gated with token
+ */
+
 task('attestation', 'tests the attestation module').setAction(async ({}, hre) => {
     const [governance, , user] = await initEnv(hre);
     const addrs = getAddrs();
     const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], governance);
 
+    // Unpause the contract
     await waitForTx(lensHub.setState(ProtocolState.Unpaused));
+
+    // Whitelist user to create a profile
     await waitForTx(lensHub.whitelistProfileCreator(user.address, true));
 
-    // Profil
-    const inputStruct: CreateProfileDataStruct = {
+    // 1- Profile
+    const inputProfilStruct: CreateProfileDataStruct = {
         to: user.address,
-        handle: 'zer0dot',
+        handle: 'profile0',
         imageURI:
             'https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan',
         followModule: ZERO_ADDRESS,
@@ -34,15 +50,51 @@ task('attestation', 'tests the attestation module').setAction(async ({}, hre) =>
         followNFTURI:
             'https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan',
     };
-    await waitForTx(lensHub.connect(user).createProfile(inputStruct));
+    await waitForTx(lensHub.connect(user).createProfile(inputProfilStruct));
 
-    // Post
+    // 2- Post
+    // Whitelist of free collect module
+    const freeCollectModuleAddr = addrs['free collect module'];
+    await waitForTx(lensHub.whitelistCollectModule(freeCollectModuleAddr, true));
 
-    // Comment normal
+    //How to get profile ID ? and how to get Pub Id ?
+    const inputPostStruct: PostDataStruct = {
+        profileId: 1,
+        contentURI: 'https://ipfs.io/ipfs/Qmby8QocUU2sPZL46rZeMctAuF5nrCc7eR1PPkooCztWPz',
+        collectModule: freeCollectModuleAddr,
+        collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
+        referenceModule: ZERO_ADDRESS,
+        referenceModuleInitData: [],
+    };
+    await waitForTx(lensHub.connect(user).post(inputPostStruct));
+    console.log(await lensHub.getPub(1, 1));
+
+    // 3- Comment normal
+    const inputCommentStruct: CommentDataStruct = {
+        profileId: 1,
+        contentURI: 'blabla',
+        profileIdPointed: 1,
+        pubIdPointed: 1,
+        referenceModuleData: [],
+        collectModule: freeCollectModuleAddr,
+        collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
+        referenceModule: ZERO_ADDRESS,
+        referenceModuleInitData: [],
+    };
+    await waitForTx(lensHub.connect(user).comment(inputCommentStruct));
+
+    //How to get the id of a comment ?
+    console.log(await lensHub.getPub(1, 2));
 
     // Comment with badge
+    /**
+ * defaultAbiCoder.encode(
+            ['address', 'uint256'],
+            [freeCollectModuleAddr, 1]
+        )
+ */
 
-    const secretCodeFollowModule = await deployContract(
+    /*const secretCodeFollowModule = await deployContract(
         new SecretCodeFollowModule__factory(governance).deploy(lensHub.address)
     );
     await waitForTx(lensHub.whitelistFollowModule(secretCodeFollowModule.address, true));
@@ -68,5 +120,5 @@ task('attestation', 'tests the attestation module').setAction(async ({}, hre) =>
     console.log(`Follow NFT total supply (should be 1): ${totalSupply}`);
     console.log(
         `Follow NFT owner of ID 1: ${ownerOf}, user address (should be the same): ${user.address}`
-    );
+    );*/
 });

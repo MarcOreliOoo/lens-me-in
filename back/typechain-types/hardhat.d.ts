@@ -173,6 +173,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ModuleGlobals__factory>;
     getContractFactory(
+      name: "Erc1155TokenGatedReferenceModule",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Erc1155TokenGatedReferenceModule__factory>;
+    getContractFactory(
       name: "Erc1155TokenGateRef",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Erc1155TokenGateRef__factory>;
@@ -481,6 +485,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ModuleGlobals>;
+    getContractAt(
+      name: "Erc1155TokenGatedReferenceModule",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Erc1155TokenGatedReferenceModule>;
     getContractAt(
       name: "Erc1155TokenGateRef",
       address: string,

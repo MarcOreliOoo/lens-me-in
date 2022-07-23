@@ -41,6 +41,7 @@ export type { SecretCodeFollowModule } from "./SecretCodeFollowModule";
 export type { FollowValidationModuleBase } from "./FollowValidationModuleBase";
 export type { ModuleBase } from "./ModuleBase";
 export type { ModuleGlobals } from "./ModuleGlobals";
+export type { Erc1155TokenGatedReferenceModule } from "./Erc1155TokenGatedReferenceModule";
 export type { Erc1155TokenGateRef } from "./Erc1155TokenGateRef";
 export type { FollowerOnlyReferenceModule } from "./FollowerOnlyReferenceModule";
 export type { ICollectModule } from "./ICollectModule";
@@ -109,6 +110,7 @@ export { SecretCodeFollowModule__factory } from "./factories/SecretCodeFollowMod
 export { FollowValidationModuleBase__factory } from "./factories/FollowValidationModuleBase__factory";
 export { ModuleBase__factory } from "./factories/ModuleBase__factory";
 export { ModuleGlobals__factory } from "./factories/ModuleGlobals__factory";
+export { Erc1155TokenGatedReferenceModule__factory } from "./factories/Erc1155TokenGatedReferenceModule__factory";
 export { Erc1155TokenGateRef__factory } from "./factories/Erc1155TokenGateRef__factory";
 export { FollowerOnlyReferenceModule__factory } from "./factories/FollowerOnlyReferenceModule__factory";
 export { ICollectModule__factory } from "./factories/ICollectModule__factory";
