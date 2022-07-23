@@ -12,15 +12,13 @@ In addition, reference modules include separate functions for validating mirrors
 so the rules can be different for each! (With the limitation that the functions are called on the same contract.)
  */
 
-contract Erc1155TokenGateRef is IReferenceModule, ModuleBase {
+contract Erc1155TokenGateReferenceModule is IReferenceModule, ModuleBase {
     error NotHolder();
     address public tokenGatedAddress;
 	uint256 public tokenGatedId;
 
     constructor(address hub) ModuleBase(hub) {}
 
-
-//ONLYHUBTODO
 	function initializeReferenceModule(uint256 profileId, uint256 pubId, bytes calldata data)
 		external
 		override
