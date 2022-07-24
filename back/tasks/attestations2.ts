@@ -993,8 +993,7 @@ task('attestation2', 'tests the attestation2 module').setAction(async ({ }, hre)
         console.log(`Expected failure occurred! Error: ${e}`);
         console.log(`Try Comment from user2 on post from user1: ${await lensHub.getPub(2, 3)}`);
     }
-    console.log(`Try Comment from user2 on post from user1 v2: ${await lensHub.getPub(2, 3)}`);
-
+    
 
 
     // Comment with badge
