@@ -11,7 +11,6 @@ import {
     CommentDataStruct,
     CreateProfileDataStruct,
     PostDataStruct,
-
 } from '../typechain-types/LensHub';
 import {
     deployContract,
@@ -22,8 +21,7 @@ import {
     ZERO_ADDRESS,
 } from './helpers/utils';
 
-import { Signer, utils, Contract, ContractFactory, Overrides } from "ethers";
-
+import { Signer, utils, Contract, ContractFactory, Overrides } from 'ethers';
 
 /**
  * Task order :
@@ -34,11 +32,416 @@ import { Signer, utils, Contract, ContractFactory, Overrides } from "ethers";
  * 5- create a comment if user gated with token
  */
 
-task('attestation', 'tests the attestation module').setAction(async ({ }, hre) => {
-
+task('attestation2', 'tests the attestation2 module').setAction(async ({}, hre) => {
     const [governance, , user, user2] = await initEnv(hre);
     const addrs = getAddrs();
     const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], governance);
+
+	// 0-Init test NFT badges
+    //deploy nft contract for simulating badges
+    const _abi = [
+        {
+            inputs: [],
+            stateMutability: 'nonpayable',
+            type: 'constructor',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'account',
+                    type: 'address',
+                },
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'operator',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'bool',
+                    name: 'approved',
+                    type: 'bool',
+                },
+            ],
+            name: 'ApprovalForAll',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'previousOwner',
+                    type: 'address',
+                },
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'newOwner',
+                    type: 'address',
+                },
+            ],
+            name: 'OwnershipTransferred',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'operator',
+                    type: 'address',
+                },
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'from',
+                    type: 'address',
+                },
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'to',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256[]',
+                    name: 'ids',
+                    type: 'uint256[]',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256[]',
+                    name: 'values',
+                    type: 'uint256[]',
+                },
+            ],
+            name: 'TransferBatch',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'operator',
+                    type: 'address',
+                },
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'from',
+                    type: 'address',
+                },
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'to',
+                    type: 'address',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'value',
+                    type: 'uint256',
+                },
+            ],
+            name: 'TransferSingle',
+            type: 'event',
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'value',
+                    type: 'string',
+                },
+                {
+                    indexed: true,
+                    internalType: 'uint256',
+                    name: 'id',
+                    type: 'uint256',
+                },
+            ],
+            name: 'URI',
+            type: 'event',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'account',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'id',
+                    type: 'uint256',
+                },
+            ],
+            name: 'balanceOf',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address[]',
+                    name: 'accounts',
+                    type: 'address[]',
+                },
+                {
+                    internalType: 'uint256[]',
+                    name: 'ids',
+                    type: 'uint256[]',
+                },
+            ],
+            name: 'balanceOfBatch',
+            outputs: [
+                {
+                    internalType: 'uint256[]',
+                    name: '',
+                    type: 'uint256[]',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'account',
+                    type: 'address',
+                },
+                {
+                    internalType: 'address',
+                    name: 'operator',
+                    type: 'address',
+                },
+            ],
+            name: 'isApprovedForAll',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'account',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+            ],
+            name: 'mint',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'owner',
+            outputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'renounceOwnership',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'from',
+                    type: 'address',
+                },
+                {
+                    internalType: 'address',
+                    name: 'to',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256[]',
+                    name: 'ids',
+                    type: 'uint256[]',
+                },
+                {
+                    internalType: 'uint256[]',
+                    name: 'amounts',
+                    type: 'uint256[]',
+                },
+                {
+                    internalType: 'bytes',
+                    name: 'data',
+                    type: 'bytes',
+                },
+            ],
+            name: 'safeBatchTransferFrom',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'from',
+                    type: 'address',
+                },
+                {
+                    internalType: 'address',
+                    name: 'to',
+                    type: 'address',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'id',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'bytes',
+                    name: 'data',
+                    type: 'bytes',
+                },
+            ],
+            name: 'safeTransferFrom',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'operator',
+                    type: 'address',
+                },
+                {
+                    internalType: 'bool',
+                    name: 'approved',
+                    type: 'bool',
+                },
+            ],
+            name: 'setApprovalForAll',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'bytes4',
+                    name: 'interfaceId',
+                    type: 'bytes4',
+                },
+            ],
+            name: 'supportsInterface',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'newOwner',
+                    type: 'address',
+                },
+            ],
+            name: 'transferOwnership',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function',
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            name: 'uri',
+            outputs: [
+                {
+                    internalType: 'string',
+                    name: '',
+                    type: 'string',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+    ];
+
+    const erc1155Token = await deployContract(new SismoBadges__factory().deploy());
+    const contract = new Contract(erc1155Token.address, _abi, user);
+    //mint from user1
+    await waitForTx(contract.mint(user.address, 1, 1));
+    //mint from user2
+    await waitForTx(contract.mint(user2.address, 1, 1));
+
+
 
     // Unpause the contract
     await waitForTx(lensHub.setState(ProtocolState.Unpaused));
@@ -47,89 +450,20 @@ task('attestation', 'tests the attestation module').setAction(async ({ }, hre) =
     await waitForTx(lensHub.whitelistProfileCreator(user.address, true));
     await waitForTx(lensHub.whitelistProfileCreator(user2.address, true));
 
-    //deploy nft contract
-    const _abi = [
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "previousOwner",
-                    "type": "address"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "newOwner",
-                    "type": "address"
-                }
-            ],
-            "name": "OwnershipTransferred",
-            "type": "event"
-        },
-        {
-            "inputs": [],
-            "name": "owner",
-            "outputs": [
-                {
-                    "internalType": "address",
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "name": "renounceOwnership",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "newOwner",
-                    "type": "address"
-                }
-            ],
-            "name": "transferOwnership",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        }
-    ];
-
-    const erc1155Token = await deployContract(
-        new SismoBadges__factory(governance).deploy(lensHub.address)
-    );
-
-    //mint from user1
-    const contractmint1 = new Contract(erc1155Token.address, _abi, user)
-    await waitForTx(contractmint1.mint())
-    //mint from user2
-    const contractmint2 = new Contract(erc1155Token.address, _abi, user2)
-    await waitForTx(contractmint2.mint())
-
-
-
-
-
-
-
-
-    //deploy the contract
-
+    //deploy the module contract
     const erc1155TokenGatedReferenceModule = await deployContract(
         new Erc1155TokenGatedReferenceModule__factory(governance).deploy(lensHub.address)
     );
-    await waitForTx(lensHub.whitelistReferenceModule(erc1155TokenGatedReferenceModule.address, true));
-    console.log(`is Reference module whistelisted: ${await lensHub.isReferenceModuleWhitelisted(erc1155TokenGatedReferenceModule.address)}`);
+    await waitForTx(
+        lensHub.whitelistReferenceModule(erc1155TokenGatedReferenceModule.address, true)
+    );
+    console.log(
+        `is Reference module whistelisted: ${await lensHub.isReferenceModuleWhitelisted(
+            erc1155TokenGatedReferenceModule.address
+        )}`
+    );
 
-    // 1- Profile
+    // 1- Profile1
     const inputProfilStruct: CreateProfileDataStruct = {
         to: user.address,
         handle: 'profile1',
@@ -142,9 +476,7 @@ task('attestation', 'tests the attestation module').setAction(async ({ }, hre) =
     };
     await waitForTx(lensHub.connect(user).createProfile(inputProfilStruct));
 
-
-
-    // 1- Profile
+    // 1- Profile2
     const inputProfilStruct2: CreateProfileDataStruct = {
         to: user2.address,
         handle: 'profile2',
@@ -157,13 +489,13 @@ task('attestation', 'tests the attestation module').setAction(async ({ }, hre) =
     };
     await waitForTx(lensHub.connect(user2).createProfile(inputProfilStruct2));
 
-
+	
     // 2- normal post
     // Whitelist of free collect module
     const freeCollectModuleAddr = addrs['free collect module'];
     await waitForTx(lensHub.whitelistCollectModule(freeCollectModuleAddr, true));
 
-    //How to get profile ID ? and how to get Pub Id ?
+    //How to get profile ID ? and how to get Pub Id ? => byHandle
     const inputPostStruct: PostDataStruct = {
         profileId: 1,
         contentURI: 'https://ipfs.io/ipfs/Qmby8QocUU2sPZL46rZeMctAuF5nrCc7eR1PPkooCztWPz',
@@ -174,6 +506,8 @@ task('attestation', 'tests the attestation module').setAction(async ({ }, hre) =
     };
     await waitForTx(lensHub.connect(user).post(inputPostStruct));
     console.log(await lensHub.getPub(1, 1));
+
+
 
     // 3- normal comment from user1
     const inputCommentStructFromUser1: CommentDataStruct = {
@@ -192,8 +526,6 @@ task('attestation', 'tests the attestation module').setAction(async ({ }, hre) =
     } catch (e) {
         console.log(`Expected failure occurred! Error: ${e}`);
     }
-
-
 
     // 3- normal comment from user2
     const inputCommentStructFromUser2: CommentDataStruct = {
@@ -216,9 +548,6 @@ task('attestation', 'tests the attestation module').setAction(async ({ }, hre) =
     //How to get the id of a comment ?
     console.log(`Comment from user1 on post from user1: ${await lensHub.getPub(1, 2)}`);
     console.log(`Comment from user2 on post from user1: ${await lensHub.getPub(2, 1)}`);
-
-
-
 
     // Comment with badge
     /**
