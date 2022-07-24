@@ -2,7 +2,8 @@ pragma solidity 0.8.10;
 
 import {IReferenceModule} from '../../../interfaces/IReferenceModule.sol';
 import {ModuleBase} from '../ModuleBase.sol';
-import {IERC1155} from '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
+import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
+import "hardhat/console.sol";
 
 
 /**
@@ -44,8 +45,12 @@ contract Erc1155TokenGatedReferenceModule is IReferenceModule, ModuleBase {
         bytes calldata data
     ) external override onlyHub {
 		address user = abi.decode(data,(address));
+		console.log(user);
+		console.log(tokenGatedAddress);
+		console.log(tokenGatedId);
 		//Verif if user got NFT
-		if(IERC1155(tokenGatedAddress).balanceOf(user,tokenGatedId) < 1) revert NotHolder();
+		//console.log(IERC1155(tokenGatedAddress));
+		if(IERC1155(tokenGatedAddress).balanceOf(msg.sender,tokenGatedId) < 1) revert NotHolder();
 	}	
 
     /**

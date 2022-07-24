@@ -831,7 +831,7 @@ task('attestation2', 'tests the attestation2 module').setAction(async ({}, hre) 
     //mint from user1
     await waitForTx(contract.mint(user.address, 1, 1));
     //mint from user2
-    await waitForTx(contract.mint(user2.address, 1, 1));
+    //await waitForTx(contract.mint(user2.address, 1, 1));
 
     // Unpause the contract
     await waitForTx(lensHub.setState(ProtocolState.Unpaused));
@@ -884,11 +884,6 @@ task('attestation2', 'tests the attestation2 module').setAction(async ({}, hre) 
     const freeCollectModuleAddr = addrs['free collect module'];
     await waitForTx(lensHub.whitelistCollectModule(freeCollectModuleAddr, true));
 
-    const data = defaultAbiCoder.encode(
-        ['address', 'uint256'],
-        [erc1155TokenGatedReferenceModule.address, 1]
-    );
-
 	const inputPostNormalStruct: PostDataStruct = {
 		profileId: 1,
 		contentURI: 'https://ipfs.io/ipfs/Qmby8QocUU2sPZL46rZeMctAuF5nrCc7eR1PPkooCztWPz',
@@ -939,62 +934,65 @@ task('attestation2', 'tests the attestation2 module').setAction(async ({}, hre) 
 	console.log(`Comment normal from user2 on post from user1: ${await lensHub.getPub(2, 1)}`);
 
 
-	/* 
+	// 4- Post with reference module : ERC1155 badges required
+    const data = defaultAbiCoder.encode(
+        ['address', 'uint256'],
+        [erc1155TokenGatedReferenceModule.address, 1]
+    );
 
-    //How to get profile ID ? and how to get Pub Id ? => byHandle
     const inputPostStruct: PostDataStruct = {
         profileId: 1,
-        contentURI: 'https://ipfs.io/ipfs/Qmby8QocUU2sPZL46rZeMctAuF5nrCc7eR1PPkooCztWPz',
+        contentURI: 'this is a private post with ERC1155 gated token required',
         collectModule: freeCollectModuleAddr,
         collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
         referenceModule: erc1155TokenGatedReferenceModule.address,
         referenceModuleInitData: data,
     };
     await waitForTx(lensHub.connect(user).post(inputPostStruct));
-    console.log(await lensHub.getPub(1, 1));
+    console.log(`Post gated with ERC1155 sismo badge from user1 : ${await lensHub.getPub(1, 3)}`);
 
-
-    // 3- normal comment from user1
+console.log(`user1 : ${user.address}`);
+console.log(`erc1155TokenGatedReferenceModule.address : ${erc1155TokenGatedReferenceModule.address}`);
+    // 5- Comment from user1 who has token
     const data_comment_user1 = defaultAbiCoder.encode(['address'], [user.address]);
     const inputCommentStructFromUser1: CommentDataStruct = {
         profileId: 1,
-        contentURI: 'blabla1',
+        contentURI: 'blabla1 with token required',
         profileIdPointed: 1,
-        pubIdPointed: 1,
+        pubIdPointed: 3,
         referenceModuleData: data_comment_user1,
         collectModule: freeCollectModuleAddr,
         collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
-        referenceModule: ZERO_ADDRESS,
-        referenceModuleInitData: [],
+        referenceModule: erc1155TokenGatedReferenceModule.address,
+        referenceModuleInitData: data,
     };
     try {
         await waitForTx(lensHub.connect(user).comment(inputCommentStructFromUser1));
     } catch (e) {
         console.log(`Expected failure occurred! Error: ${e}`);
     }
+	console.log(`Comment gated with ERC1155 sismo badge from user1 : ${await lensHub.getPub(1, 4)}`);
 
-    // 3- normal comment from user2
-    const data_comment_user2 = defaultAbiCoder.encode(['address'], [user2.address]);
-    const inputCommentStructFromUser2: CommentDataStruct = {
+    // 5- Comment from user2 who has not token
+    //const data_comment_user2 = defaultAbiCoder.encode(['address'], [user2.address]);
+    /*const inputCommentStructFromUser2: CommentDataStruct = {
         profileId: 2,
-        contentURI: 'blabla2',
+        contentURI: 'blabla2 without token',
         profileIdPointed: 1,
         pubIdPointed: 1,
-        referenceModuleData: data_comment_user2,
+        referenceModuleData: [],
         collectModule: freeCollectModuleAddr,
         collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
         referenceModule: ZERO_ADDRESS,
         referenceModuleInitData: [],
     };
     try {
-        await waitForTx(lensHub.connect(user).comment(inputCommentStructFromUser2));
+        await waitForTx(lensHub.connect(user2).comment(inputCommentStructFromUser2));
     } catch (e) {
         console.log(`Expected failure occurred! Error: ${e}`);
-    }
-
-    //How to get the id of a comment ?
-    console.log(`Comment from user1 on post from user1: ${await lensHub.getPub(1, 2)}`);
-    console.log(`Comment from user2 on post from user1: ${await lensHub.getPub(2, 1)}`); */
+		console.log(`Try Comment from user2 on post from user1: ${await lensHub.getPub(2, 3)}`);
+    }*/
+	 
 
     // Comment with badge
     /**
