@@ -32,7 +32,7 @@ import { Signer, utils, Contract, ContractFactory, Overrides } from 'ethers';
  * 5- create a comment if user gated with token
  */
 
-task('attestation2', 'tests the attestation2 module').setAction(async ({}, hre) => {
+task('attestation2', 'tests the attestation2 module').setAction(async ({ }, hre) => {
     const [governance, , user, user2] = await initEnv(hre);
     const addrs = getAddrs();
     const lensHub = LensHub__factory.connect(addrs['lensHub proxy'], governance);
@@ -884,60 +884,60 @@ task('attestation2', 'tests the attestation2 module').setAction(async ({}, hre) 
     const freeCollectModuleAddr = addrs['free collect module'];
     await waitForTx(lensHub.whitelistCollectModule(freeCollectModuleAddr, true));
 
-	const inputPostNormalStruct: PostDataStruct = {
-		profileId: 1,
-		contentURI: 'https://ipfs.io/ipfs/Qmby8QocUU2sPZL46rZeMctAuF5nrCc7eR1PPkooCztWPz',
-		collectModule: freeCollectModuleAddr,
-		collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
-		referenceModule: ZERO_ADDRESS,
-		referenceModuleInitData: [],
-	};
-	await waitForTx(lensHub.connect(user).post(inputPostNormalStruct));
-	console.log(`Post normal from user1 : ${await lensHub.getPub(1, 1)}`);
+    const inputPostNormalStruct: PostDataStruct = {
+        profileId: 1,
+        contentURI: 'https://ipfs.io/ipfs/Qmby8QocUU2sPZL46rZeMctAuF5nrCc7eR1PPkooCztWPz',
+        collectModule: freeCollectModuleAddr,
+        collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
+        referenceModule: ZERO_ADDRESS,
+        referenceModuleInitData: [],
+    };
+    await waitForTx(lensHub.connect(user).post(inputPostNormalStruct));
+    console.log(`Post normal from user1 : ${await lensHub.getPub(1, 1)}`);
 
-	// 3- normal comment from user1
-	const inputCommentNormalStructFromUser1: CommentDataStruct = {
-		profileId: 1,
-		contentURI: 'blabla11',
-		profileIdPointed: 1,
-		pubIdPointed: 1,
-		referenceModuleData: [],
-		collectModule: freeCollectModuleAddr,
-		collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
-		referenceModule: ZERO_ADDRESS,
-		referenceModuleInitData: [],
-	};
-	try {
-		await waitForTx(lensHub.connect(user).comment(inputCommentNormalStructFromUser1));
-	} catch (e) {
-		console.log(`Expected failure occurred! Error: ${e}`);
-	}
-	console.log(`Comment normal from user1 on post from user1: ${await lensHub.getPub(1, 2)}`);
+    // 3- normal comment from user1
+    const inputCommentNormalStructFromUser1: CommentDataStruct = {
+        profileId: 1,
+        contentURI: 'blabla11',
+        profileIdPointed: 1,
+        pubIdPointed: 1,
+        referenceModuleData: [],
+        collectModule: freeCollectModuleAddr,
+        collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
+        referenceModule: ZERO_ADDRESS,
+        referenceModuleInitData: [],
+    };
+    try {
+        await waitForTx(lensHub.connect(user).comment(inputCommentNormalStructFromUser1));
+    } catch (e) {
+        console.log(`Expected failure occurred! Error: ${e}`);
+    }
+    console.log(`Comment normal from user1 on post from user1: ${await lensHub.getPub(1, 2)}`);
 
-	// 3- normal comment from user2
-	const inputCommentNormalStructFromUser2: CommentDataStruct = {
-		profileId: 2,
-		contentURI: 'blabla21',
-		profileIdPointed: 1,
-		pubIdPointed: 1,
-		referenceModuleData: [],
-		collectModule: freeCollectModuleAddr,
-		collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
-		referenceModule: ZERO_ADDRESS,
-		referenceModuleInitData: [],
-	};
-	try {
-		await waitForTx(lensHub.connect(user2).comment(inputCommentNormalStructFromUser2));
-	} catch (e) {
-		console.log(`Expected failure occurred! Error: ${e}`);
-	}
-	console.log(`Comment normal from user2 on post from user1: ${await lensHub.getPub(2, 1)}`);
+    // 3- normal comment from user2
+    const inputCommentNormalStructFromUser2: CommentDataStruct = {
+        profileId: 2,
+        contentURI: 'blabla21',
+        profileIdPointed: 1,
+        pubIdPointed: 1,
+        referenceModuleData: [],
+        collectModule: freeCollectModuleAddr,
+        collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
+        referenceModule: ZERO_ADDRESS,
+        referenceModuleInitData: [],
+    };
+    try {
+        await waitForTx(lensHub.connect(user2).comment(inputCommentNormalStructFromUser2));
+    } catch (e) {
+        console.log(`Expected failure occurred! Error: ${e}`);
+    }
+    console.log(`Comment normal from user2 on post from user1: ${await lensHub.getPub(2, 1)}`);
 
 
-	// 4- Post with reference module : ERC1155 badges required
+    // 4- Post with reference module : ERC1155 badges required
     const data = defaultAbiCoder.encode(
         ['address', 'uint256'],
-        [erc1155TokenGatedReferenceModule.address, 1]
+        [contract.address, 1]
     );
 
     const inputPostStruct: PostDataStruct = {
@@ -951,8 +951,9 @@ task('attestation2', 'tests the attestation2 module').setAction(async ({}, hre) 
     await waitForTx(lensHub.connect(user).post(inputPostStruct));
     console.log(`Post gated with ERC1155 sismo badge from user1 : ${await lensHub.getPub(1, 3)}`);
 
-console.log(`user1 : ${user.address}`);
-console.log(`erc1155TokenGatedReferenceModule.address : ${erc1155TokenGatedReferenceModule.address}`);
+    console.log(`user1 : ${user.address}`);
+    console.log(`erc1155TokenGatedReferenceModule.address : ${erc1155TokenGatedReferenceModule.address}`);
+    console.log(`erc1155TokenGatedReferenceModule.tokenGatedAddress : ${await erc1155TokenGatedReferenceModule.tokenGatedAddress()}`);
     // 5- Comment from user1 who has token
     const data_comment_user1 = defaultAbiCoder.encode(['address'], [user.address]);
     const inputCommentStructFromUser1: CommentDataStruct = {
@@ -971,15 +972,15 @@ console.log(`erc1155TokenGatedReferenceModule.address : ${erc1155TokenGatedRefer
     } catch (e) {
         console.log(`Expected failure occurred! Error: ${e}`);
     }
-	console.log(`Comment gated with ERC1155 sismo badge from user1 : ${await lensHub.getPub(1, 4)}`);
+    console.log(`Comment gated with ERC1155 sismo badge from user1 : ${await lensHub.getPub(1, 4)}`);
 
     // 5- Comment from user2 who has not token
     //const data_comment_user2 = defaultAbiCoder.encode(['address'], [user2.address]);
-    /*const inputCommentStructFromUser2: CommentDataStruct = {
+    const inputCommentStructFromUser2: CommentDataStruct = {
         profileId: 2,
         contentURI: 'blabla2 without token',
         profileIdPointed: 1,
-        pubIdPointed: 1,
+        pubIdPointed: 3,
         referenceModuleData: [],
         collectModule: freeCollectModuleAddr,
         collectModuleInitData: defaultAbiCoder.encode(['bool'], [true]),
@@ -990,9 +991,11 @@ console.log(`erc1155TokenGatedReferenceModule.address : ${erc1155TokenGatedRefer
         await waitForTx(lensHub.connect(user2).comment(inputCommentStructFromUser2));
     } catch (e) {
         console.log(`Expected failure occurred! Error: ${e}`);
-		console.log(`Try Comment from user2 on post from user1: ${await lensHub.getPub(2, 3)}`);
-    }*/
-	 
+        console.log(`Try Comment from user2 on post from user1: ${await lensHub.getPub(2, 3)}`);
+    }
+    console.log(`Try Comment from user2 on post from user1 v2: ${await lensHub.getPub(2, 3)}`);
+
+
 
     // Comment with badge
     /**
