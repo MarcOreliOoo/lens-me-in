@@ -1,10 +1,6 @@
 import { defaultAbiCoder } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
-import {
-    FollowNFT__factory,
-    LensHub__factory,
-    SecretCodeFollowModule__factory,
-} from '../typechain-types';
+import { LensHub__factory } from '../typechain-types';
 import {
     CommentDataStruct,
     CreateProfileDataStruct,
@@ -69,7 +65,7 @@ task('attestation', 'tests the attestation module').setAction(async ({}, hre) =>
     await waitForTx(lensHub.connect(user).post(inputPostStruct));
     console.log(await lensHub.getPub(1, 1));
 
-    // 3- normal comment 
+    // 3- normal comment
     const inputCommentStruct: CommentDataStruct = {
         profileId: 1,
         contentURI: 'blabla',
